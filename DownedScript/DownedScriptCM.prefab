@@ -1,0 +1,355 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1018082471943448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4830651823155866}
+  - component: {fileID: 114063376516329970}
+  - component: {fileID: 114865194739527744}
+  m_Layer: 0
+  m_Name: DownedScript
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4830651823155866
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1018082471943448}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.1848495, y: -0.83334017, z: -1.4126334}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4705462280507412}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114063376516329970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1018082471943448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8ca71ca01d2fb4098cb42abc5eceb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 4900000, guid: dc2c7141a4a05994caf418e7eed1a226, type: 3}
+  behaviour: DownedScript
+  targets:
+  - name: export
+    value: {fileID: 114865194739527744}
+--- !u!114 &114865194739527744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1018082471943448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a53a71c6a7b01e1449208c55b04f1aa8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bools: []
+  ints: []
+  floats: []
+  strings: []
+  vectors: []
+  rotations: []
+  colors: []
+  gradients: []
+  textures: []
+  sprites: []
+  audioClips: []
+  materials: []
+  animationCurves: []
+  gameObjects: []
+  skins:
+  - id: skinrecon1
+    value:
+      name: RECON-1
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 11073f67c9a5b254e93cd688184bf6ae, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinrecon2
+    value:
+      name: RECON-2
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 11073f67c9a5b254e93cd688184bf6ae, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinassault1
+    value:
+      name: ASSAULT-1
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 6be439e5b7f195d4ba180e86a0ba4aad, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinassault2
+    value:
+      name: ASSAULT-2
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 6be439e5b7f195d4ba180e86a0ba4aad, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinassault3
+    value:
+      name: ASSAULT-3
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 6be439e5b7f195d4ba180e86a0ba4aad, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinsupport1
+    value:
+      name: SUPPORT-1
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 76bbb98baa8bcf043967d514decb5728, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinengineer1
+    value:
+      name: ENGINEER-1
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 1fe2ad028e6ebcf4a945a989326cbb37, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinengineer2
+    value:
+      name: ENGINEER-2
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 1fe2ad028e6ebcf4a945a989326cbb37, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  - id: skinmedic1
+    value:
+      name: MEDIC-1
+      characterSkin:
+        mesh: {fileID: 4300000, guid: 25c71546bcfd3834e881ae78a334dc26, type: 3}
+        materials:
+        - {fileID: 2100000, guid: 3312a50098bbfef4d97671b804c46308, type: 2}
+        teamMaterial: -1
+      armSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      kickLegSkin:
+        mesh: {fileID: 0}
+        materials: []
+        teamMaterial: 0
+      rigSettings:
+        version: 1
+  weaponEntries: []
+--- !u!1 &1596911446512402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4705462280507412}
+  - component: {fileID: 114009281023113522}
+  m_Layer: 0
+  m_Name: DownedScriptCM
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4705462280507412
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596911446512402}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.1848495, y: -0.83334017, z: -1.4126332}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 4830651823155866}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114009281023113522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596911446512402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec3b8824308adc64fb1901cef109132a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mutators:
+  - name: EasyRevive
+    description: Bots can be downed!
+    menuImage: {fileID: 2800000, guid: ac970b7fe24f9b94e907b69d8f9b06dd, type: 3}
+    mutatorPrefab: {fileID: 1018082471943448}
+    configuration:
+      labels: []
+      integers:
+      - id: downedhealth
+        displayName: Health threshold to be downed under
+        orderPriority: 2
+        value: 50
+      - id: maxbleedouttime
+        displayName: Default/Maximum bleedout time in seconds (from threshold health)
+        orderPriority: 10
+        value: 90
+      - id: minbleedouttime
+        displayName: Minimum bleedout time in seconds (from threshold health)
+        orderPriority: 11
+        value: 30
+      - id: addhealth
+        displayName: Extra health to add when downed
+        orderPriority: 15
+        value: 30
+      floats: []
+      ranges:
+      - id: percentmedic
+        displayName: Force medic AI to % of bots
+        orderPriority: 21
+        value:
+          value: 0
+          min: 0
+          max: 100
+          wholeNumbers: 1
+      strings:
+      - id: medicitems
+        displayName: Medic Items
+        orderPriority: 22
+        value: MEDIC BAG
+      bools:
+      - id: bleedout
+        displayName: Enable Bleedout
+        orderPriority: 5
+        value: 1
+      - id: dynbleed
+        displayName: Bleedout time depends on remaining health?
+        orderPriority: 6
+        value: 1
+      - id: playerbleed
+        displayName: Allow Player to be downed
+        orderPriority: 7
+        value: 1
+      - id: randomedics
+        displayName: Enable medic AI
+        orderPriority: 20
+        value: 1
+      - id: unconanim
+        displayName: Screen darkening animation when unconscious
+        orderPriority: 25
+        value: 1
+      dropdowns:
+      - id: team
+        displayName: Team
+        orderPriority: 0
+        value:
+          index: 0
+          labels:
+          - <b><color=orange>BOTH</color></b>
+          - <b><color=blue>EAGLE</color></b>
+          - <b><color=red>RAVEN</color></b>

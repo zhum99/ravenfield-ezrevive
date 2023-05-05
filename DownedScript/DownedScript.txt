@@ -1,0 +1,595 @@
+﻿-- Register the behaviour
+behaviour("DownedScript")
+
+local damagedactors
+local actorList
+local checkactorlist
+local redmedics
+local bluemedics
+local redwounded
+local redwoundedclaimed
+local bluewounded
+local bluewoundedclaimed
+
+function DownedScript:Start()
+	-- Start mutator
+	print("DownedScript & MedicBots V1.0 By Milkman")
+
+	--PRESTART------------------------------------------------------------------------------------------------------------
+
+	--Register empty arrays
+	damagedactors = {}
+	actorList = {}
+	checkactorlist = {}
+
+	--Register medic script related arrays
+	redmedics = {}
+	bluemedics = {}
+	redwounded = {}
+	redwoundedclaimed = {}
+	bluewounded = {}
+	bluewoundedclaimed = {}
+
+	--Get bleedout times
+	maxbleedtime = self.script.mutator.GetConfigurationInt('maxbleedouttime')
+	minbleedtime = self.script.mutator.GetConfigurationInt('minbleedouttime')
+
+	--Get health config ints
+	downedhealth = self.script.mutator.GetConfigurationInt('downedhealth')
+
+	--Get medic bool
+	randomedics = self.script.mutator.GetConfigurationBool('randomedics')
+	--Get medic %
+	maxrandomedfloat = self.script.mutator.GetConfigurationRange('percentmedic')
+	--Get medic items
+	medicitems = DownedScriptReadTags(self.script.mutator.GetConfigurationString('medicitems'))
+
+	--Get team
+	mutatorteam = self.script.mutator.GetConfigurationDropdown('team')
+	if mutatorteam == 0 then
+		mutatorteam = "Both"
+		actorList = ActorManager.actors
+	elseif mutatorteam == 1 then
+		mutatorteam = Team.Blue
+		actorList = ActorManager.GetActorsOnTeam(mutatorteam)
+	elseif mutatorteam == 2 then	
+		mutatorteam = Team.Red
+		actorList = ActorManager.GetActorsOnTeam(mutatorteam)
+	end
+	
+	--Add listener for damage event
+	for actorKey, actor in pairs(actorList) do
+		if not actor.isPlayer then
+    		actor.onTakeDamage.AddListener(self, "ActorTakeDamage")
+			table.insert(checkactorlist, actor)
+		end
+	end
+	--print("added actor damage listener",#checkactorlist,"times")
+	
+	--Add listener to player only
+	if self.script.mutator.GetConfigurationBool('playerbleed') then
+		Player.actor.onTakeDamage.AddListener(self, "PlayerTakeDamage")
+		--print("added player damage listener")
+	end
+	
+	--Add listeners for botcreate
+	GameEvents.onActorCreated.AddListener(self, "OnActorCreated")
+	GameEvents.onActorSelectedLoadout.AddListener(self, "OnActorSelectedLoadout")
+	GameEvents.onActorSpawn.AddListener(self,"OnActorSpawn")
+	GameEvents.onActorDied.AddListener(self,"OnActorDied")
+end
+
+function DownedScript:Update()
+	for k,v in pairs(damagedactors) do
+   		local actor = v
+    	if actor.health >= (self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth')) or actor.isDead then
+        	table.remove(damagedactors, k)
+			--print("removing actor from damagedactors list")
+			actor.canDeployParachute = true
+			if actor.team==Team.Blue then
+				for k,v in pairs(bluewounded) do
+					if actor==v then
+						table.remove(bluewounded, k)
+						--print("removing actor from bluewounded list")
+					end
+				end
+				for k,v in pairs(bluewoundedclaimed) do
+					if actor==v then
+						table.remove(bluewoundedclaimed, k)
+						--print("removing actor from bluewoundedclaimed list")
+					end
+				end
+			end
+			if actor.team==Team.Red then
+				for k,v in pairs(redwounded) do
+					if actor==v then
+						table.remove(redwounded, k)
+					end
+				end
+				for k,v in pairs(redwoundedclaimed) do
+					if actor==v then
+						table.remove(redwoundedclaimed, k)
+					end
+				end
+			end
+		else
+			actor.balance = -10
+		end
+	end
+end
+
+function DownedScript:OnActorCreated(actor)
+	actor.onTakeDamage.AddListener(self, "ActorTakeDamage")
+	table.insert(checkactorlist, actor)
+end
+
+function DownedScript:ActorTakeDamage(actor,source,info)
+	local canbedamaged=true
+	if actor.isSeated then
+		if actor.activeSeat.isEnclosed then
+			canbedamaged=false
+			--print("actor is in an enclosed seat")
+		else
+			canbedamaged=true
+			--print("actor is not in an enclosed seat")
+		end
+	else
+		--print("actor is not seated")
+	end
+	if actor.health-info.healthDamage <= self.script.mutator.GetConfigurationInt('downedhealth') and canbedamaged and not actor.isDead then
+		local actorfound = false
+		for k,v in pairs(damagedactors) do
+			if actor == v then
+				actorfound = true
+				--print("actor found")
+				break
+			end
+		end
+		if not actorfound then
+			--print("actor not found")
+			if actor.isSwimming == true then
+				actor.Kill(source)
+				--print("drowning downed actor")
+			end
+			actor.canDeployParachute = false
+			if actor.isParachuteDeployed == true then
+				actor.CutParachute()
+				end
+			table.insert(damagedactors, actor)
+			if actor.team==Team.Blue then
+				table.insert(bluewounded, actor)
+				--print("actor downed, added to bluewounded")
+			end
+			if actor.team==Team.Red then
+				table.insert(redwounded, actor)
+				--print("actor downed, added to redwounded")
+			end
+			actor.health=actor.health + self.script.mutator.GetConfigurationInt('addhealth')
+			myactor=actor.actorIndex
+			mysource=source
+			actor.KnockOver(Vector3(-0.1,0.0,-0.1))
+			if self.script.mutator.GetConfigurationBool('bleedout') then
+				self.script.StartCoroutine(self:ActorBleedout(myactor,mysource))
+			end
+			--print("actor health went under threshhold, adding to damagedactors list & downing")
+		end
+	end
+end
+
+function DownedScript:ActorBleedout(myactor,mysource)
+	return function()
+		for actorKey, actor in pairs(actorList) do
+			if actorKey == myactor then
+				if self.script.mutator.GetConfigurationBool('dynbleed') then
+					bleedhealth=(self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth'))
+				else
+					bleedhealth=actor.health
+				end
+				if not(actor.health <= minbleedtime) then
+					bleedoutsecondsvar = (maxbleedtime/bleedhealth)
+				else
+					bleedoutsecondsvar = (minbleedtime/bleedhealth)
+				end
+				local checkhealthval=actor.health
+				while actor.health >= 0 do
+					if  actor.health > checkhealthval then
+						--print("BOT IS HEALING!")
+						break
+					else
+						checkhealthval=actor.health
+						coroutine.yield(WaitForSeconds(bleedoutsecondsvar))
+						actor.health=(actor.health-1)
+						--print(actor.health)
+					end
+					if (actor.health <= 0) and not actor.isDead then
+						actor.Kill(mysource)
+					end
+					if actor.isSwimming == true then
+						actor.Kill(source)
+						--print("drowning downed actor")
+					end
+				end
+				break
+			end
+		end
+	end
+end
+
+--Player related functions
+
+function DownedScript:PlayerTakeDamage(actor,source,info)
+	--print(actor.health-info.healthDamage)
+	local canbedamaged=true
+	if actor.isSeated then
+		if actor.activeSeat.isEnclosed then
+			canbedamaged=false
+			--print("actor is in an enclosed seat")
+		else
+			canbedamaged=true
+			--print("actor is not in an enclosed seat")
+		end
+	else
+		--print("actor is not seated")
+	end
+	--print("actor can be damaged:",canbedamaged)
+	if actor.health-info.healthDamage <= self.script.mutator.GetConfigurationInt('downedhealth') and canbedamaged and not actor.isDead then
+		local playerfound = false
+		for k,v in pairs(damagedactors) do
+			if actor == v then
+				playerfound = true
+				--print("player found")
+				break
+			end
+		end
+		if not playerfound then
+			--print("player not found")
+			actor.canDeployParachute = false
+			if actor.isParachuteDeployed == true then
+				actor.CutParachute()
+				end
+			table.insert(damagedactors, actor)
+			if actor.team==Team.Blue then
+				table.insert(bluewounded, actor)
+				--print("actor downed, added to bluewounded")
+			end
+			if actor.team==Team.Red then
+				table.insert(redwounded, actor)
+				--print("actor downed, added to redwounded")
+			end
+			actor.health=actor.health + self.script.mutator.GetConfigurationInt('addhealth')
+			mysource=source
+			actor.KnockOver(Vector3(-0.1,0.0,-0.1))
+			if self.script.mutator.GetConfigurationBool('bleedout') then
+				self.script.StartCoroutine(self:PlayerBleedout(actor,mysource))
+			end
+			--print("player health went under threshhold, adding to damagedactors list & downing")
+		end
+	end
+end
+
+function DownedScript:PlayerBleedout(actor,mysource)
+	return function()
+	--print("begin player bleedout")
+		if self.script.mutator.GetConfigurationBool('dynbleed') then
+			bleedhealth=(self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth'))
+		else
+			bleedhealth=actor.health
+		end
+		if not(actor.health <= minbleedtime) then
+			bleedoutsecondsvar = (maxbleedtime/bleedhealth)
+		else
+			bleedoutsecondsvar = (minbleedtime/bleedhealth)
+		end
+		if self.script.mutator.GetConfigurationBool('unconanim') then
+			self.script.StartCoroutine(self:PlayerScreenAnim(actor))
+		end
+		--print("bleedoutseconds var is",bleedoutsecondsvar)
+		local checkhealthval=actor.health
+		--print("checkstop value",checkhealthval)
+		while actor.health >= 0 do
+			--print("checkstop:",checkhealthval,"current health:",actor.health)
+			if  actor.health > checkhealthval then
+				--print("PLAYER IS HEALING!")
+				break
+			else
+				checkhealthval=actor.health
+				--print("static delay, subtracting 1 from health")
+				coroutine.yield(WaitForSeconds(bleedoutsecondsvar))
+				actor.health=(actor.health-1)
+				--print(actor.health)
+			end
+			if (actor.health <= 0) and not actor.isDead then
+				actor.Kill(mysource)
+				--print("killer credit:",mysource)
+			end
+			if actor.isSwimming == true then
+				actor.Kill(source)
+				--print("drowning downed player")
+			end
+		end
+		--print("actorhealth: ",actor.health)
+		--print("stop bleedout")
+	end
+end
+
+function DownedScript:PlayerScreenAnim(actor)
+	return function()
+		--print("begin player blackout")
+		EffectUi.FadeOut(2, 0.1, Color(black))
+		coroutine.yield(WaitForSeconds(1))
+		EffectUi.FadeIn(2, 3, Color(black))
+		while actor.health <= (self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth')) and not actor.isDead do
+			coroutine.yield(WaitForSeconds(3))
+			if actor.health >= (self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth')) or actor.isDead then
+				break
+			end
+			EffectUi.FadeOut(2, 3, Color(black))
+			if actor.health >= (self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth')) or actor.isDead then
+				EffectUi.FadeIn(2, 0.1, Color(black))	
+				break
+			end
+			coroutine.yield(WaitForSeconds(3))
+			if actor.health >= (self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth')) or actor.isDead then
+				EffectUi.FadeIn(2, 0.1, Color(black))
+				break
+			end
+			EffectUi.FadeIn(2, 3, Color(black))
+		end
+	end
+end
+
+--Medic related functions
+
+function DownedScript:OnActorSelectedLoadout(actor, loadoutset, loadoutpickstrategy)
+	if randomedics==true and not actor.isPlayer then
+		if loadoutpickstrategy.type==loadoutpickstrategy.type.Normal then
+			local randomedfloat=math.random(1,100)
+			if randomedfloat>=1 and randomedfloat<=maxrandomedfloat then
+				loadoutpickstrategy.type=loadoutpickstrategy.type.ResupplyHealth
+				--print("forced medic bot")
+			end
+		end
+		if loadoutpickstrategy.type==loadoutpickstrategy.type.ResupplyHealth then
+			--print("medic bot spawned")
+			if(actor.team==Team.Blue) then
+				table.insert(bluemedics, actor)
+				--print("added to blue medic list")
+			end
+			if actor.team==Team.Red then
+				table.insert(redmedics, actor)
+				--print("added to red medic list")
+			end
+		end
+	end
+end
+
+function ReturnHasMedItem(actor, tags)
+	local weaponfound=false
+	--print("beginning weaponfoundcheck")
+	for x=1,5,1 do
+		if actor.weaponSlots[x]~=nil then
+			for k,v in pairs(tags) do
+				--print("comparing actor's",actor.weaponSlots[x].weaponEntry.name,"to medic item",v)
+				if v==(actor.weaponSlots[x].weaponEntry.name) then
+					weaponfound=true
+					--print("medic item found in slot",x,"returning weaponfound as",weaponfound)
+					return weaponfound
+				end
+			end
+		end
+	end
+end
+
+function ReturnFirstMedItemSlot(actor, tags)
+	local weaponfound=false
+	--print("beginning weaponfoundcheck")
+	for x=1,5,1 do
+		if actor.weaponSlots[x]~=nil then
+			for k,v in pairs(tags) do
+				--print("comparing actor's",actor.weaponSlots[x].weaponEntry.name,"to medic item",v)
+				if v==(actor.weaponSlots[x].weaponEntry.name) then
+					weaponfound=true
+					--print("medic item found in slot",x,"returning weaponfound as",weaponfound)
+					return x
+				end
+			end
+		end
+	end
+end
+
+function DownedScriptReadTags(tagsstring)
+	tags = {}
+    for tag in (tagsstring..";"):gmatch("(.-)"..";") do
+        table.insert(tags, tag);
+    end
+	return tags
+end
+
+function DownedScript:OnActorSpawn(actor)
+	if actor.isPlayer==false and ReturnHasMedItem(actor, medicitems) and randomedics==true then
+		--print("medic bot spawned holding",actor.weaponSlots[1].weaponEntry.name)
+		if(actor.team==Team.Blue) then
+			table.insert(bluemedics, actor)
+			--print("added to blue medic list")
+		end
+		if actor.team==Team.Red then
+			table.insert(redmedics, actor)
+			--print("added to red medic list")
+		end
+	end
+	for k,v in pairs(bluemedics) do
+		if actor==v then
+			--print("starting blue medic coroutine")
+			self.script.StartCoroutine(self:MedicSearch(actor, bluemedics, bluewounded, bluewoundedclaimed))
+		end
+	end
+	for k,v in pairs(redmedics) do
+		if actor==v then
+			--print("starting red medic coroutine")
+			self.script.StartCoroutine(self:MedicSearch(actor, redmedics, redwounded, redwoundedclaimed))
+		end
+	end
+end
+
+function DownedScript:OnActorDied(actor)
+	for k,v in pairs(bluemedics) do
+		if actor==v then
+			--print("removing dead blue medic")
+			table.remove(bluemedics, k)
+		end
+	end
+	for k,v in pairs(redmedics) do
+		if actor==v then
+			--print("removing dead red medic")
+			table.remove(redmedics, k)
+		end
+	end
+end
+
+function DownedScript:MedicSearch(medic, mediclist, downedlist, claimedlist)
+	return function()
+		--print("beginning medicsearch coroutine")
+		local ishealing=false
+		while not medic.isDead do
+			coroutine.yield(WaitForSeconds(3))
+			if not medic.isSeated and medic.health >= self.script.mutator.GetConfigurationInt('downedhealth') then
+				--print("medic is up, begin medicsearch coroutine")
+				coroutine.yield(WaitForSeconds(3))
+				if MedicReturnClosestWoundedDistance(medic, downedlist) < 40 and MedicReturnClosestWoundedDistance(medic, downedlist) > 0 and ishealing==false then
+					closestwoundedactor=MedicReturnClosestWoundedActor(medic, downedlist)
+					for k,v in pairs(downedlist) do
+						if closestwoundedactor==k then
+							table.remove(downedlist, k)
+						end
+					end
+					table.insert(claimedlist, closestwoundedactor)
+					self.script.StartCoroutine(self:MedicHealClosestWounded(medic, closestwoundedactor, downedlist, claimedlist, ishealing))
+					ishealing=true
+					--print("medic seeking patient")
+				end
+				local actorfound=false
+				for k,v in pairs(claimedlist) do
+					if  closestwoundedactor==v then
+						actorfound=true
+						--print("medic still seeking patient")
+					else
+						actorfound=false
+					end
+				end
+				if actorfound==false then
+					ishealing=false
+					--print("medic no longer seeking patient")
+				end
+			else
+				ishealing=false
+				for k,v in pairs(claimedlist) do
+					if closestwoundedactor==k then
+						table.remove(claimedlist, k)
+						table.insert(downedlist, closestwoundedactor)
+					end
+				end
+				for k,v in pairs(mediclist) do
+					if medic==k then
+						table.remove(mediclist, k)
+					end
+				end
+			end
+		end
+		ishealing=false
+		for k,v in pairs(claimedlist) do
+			if closestwoundedactor==k then
+				table.remove(claimedlist, k)
+				table.insert(downedlist, closestwoundedactor)
+			end
+		end
+		for k,v in pairs(mediclist) do
+			if medic==k then
+				table.remove(mediclist, k)
+			end
+		end
+	end
+end
+
+function MedicReturnClosestWoundedDistance(medic, downedlist)
+	closestwoundeddistance=5000;
+	iterationvar=0;
+	if #downedlist>0 then
+		for k,v in pairs(downedlist) do
+			distance=Vector3.Distance(medic.position, v.position)
+			if iterationvar==0 then
+				closestwoundeddistance=distance
+			end
+			if distance<closestwoundeddistance and not distance==0 then
+				closestwoundeddistance=distance
+			end
+			iterationvar=iterationvar+1
+		end
+	end
+	return closestwoundeddistance
+end
+
+function MedicReturnClosestWoundedActor(medic, downedlist)
+	closestdist=0;
+	iterationvar=0;
+	if #downedlist > 0 then
+		for actor,v in pairs(downedlist) do
+			distance=Vector3.Distance(medic.position, v.position)
+			if iterationvar==0 then
+				closestdist=distance
+				closestwoundedactor=v
+			end
+			if distance<closestdist then
+				closestdist=distance
+				closestwoundedactor=v
+			end
+			iterationvar=iterationvar+1
+		end
+	end
+	return closestwoundedactor
+end
+
+function DownedScript:MedicHealClosestWounded(medic, closestwoundedactor, downedlist, claimedlist, ishealing)
+	return function()
+		for k,v in pairs(downedlist) do
+			if closestwoundedactor==k then
+				table.remove(downedlist, k)
+				table.insert(claimedlist, closestwoundedactor)
+			end
+		end
+		if not medic.isDead and #medic.squad.members > 0 then
+			medicoldsquad=medic.squad
+			medic.squad.RemoveMember(medic)
+			local medicsquadarray = {}
+			table.insert(medicsquadarray,medic)
+			Squad.Create(medicsquadarray)
+			medicnewsquad=medic.squad
+			--print("splitting medic into new squad")
+			medic.aiController.OverrideDefaultMovement()
+			medic.aiController.Goto(closestwoundedactor.position)
+			coroutine.yield(WaitForSeconds(1.5))
+			medic.aiController.Goto(closestwoundedactor.position)
+			while medic.balance > 0 and not closestwoundedactor.isDead and closestwoundedactor.health<(self.script.mutator.GetConfigurationInt('downedhealth')+self.script.mutator.GetConfigurationInt('addhealth')) do
+				if Vector3.Distance(medic.position, closestwoundedactor.position) < 2 then
+					--print(closestwoundedactor.health)
+					coroutine.yield(WaitForSeconds(2))
+					closestwoundedactor.ResupplyHealth(30)
+					--print(closestwoundedactor.health)
+				end
+				coroutine.yield(WaitForSeconds(2.5))
+			coroutine.yield(WaitForSeconds(2))
+			end
+		end
+		medic.aiController.ReleaseDefaultMovementOverride()
+		if not medic.isDead and #(medicoldsquad.members)>0 then
+			medicnewsquad.RemoveMember(medic)
+			medicoldsquad.AddMember(medic)
+			--print("merging back into old squad")
+		end
+		for k,v in pairs(claimedlist) do
+			if closestwoundedactor==v then
+				table.remove(claimedlist, k)
+				--print("closestwoundedactor removed from claimedlist by coroutine")
+			end
+		end
+	end
+end
